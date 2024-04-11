@@ -13,7 +13,7 @@ const client = new Client({
     ],
     partials: [Partials.Channel, Partials.Message, Partials.User, Partials.GuildMember, Partials.Reaction]
 })
-const tokens =""
+const tokens ="MTIyNzkxNzg2ODE0MjY5MDMzNQ.Gb6td8.E5Yrp98oOrsRlApkGzW-dXDr3Qu0x5pcFfcj2E"
 
 console.log(tokens)
 // The ready event is vital, it means that your bot will only start reacting to information
