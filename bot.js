@@ -1,8 +1,9 @@
 require("dotenv").config()
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
-const ytdl = require("ytdl-core")
+const ytdl = require('ytdl-core-discord');
 const { Client, GatewayIntentBits, Partials } = require("discord.js")
 const axios = require("axios")
+const {args} = require("fluent-ffmpeg/lib/utils");
 const prefix = process.env.PREFIX
 const API_KEY = process.env.YOUTUBE_API_KEY
 const client = new Client({
@@ -81,18 +82,35 @@ client.on("messageCreate", async (msg) => {
 
     const channelId = '1227919271628242948'
 
-    const connection = joinVoiceChannel(
+    const connection = await joinVoiceChannel(
         {
             channelId: msg.member.voice.channelId,
             guildId: msg.guild.id,
-            adapterCreator: msg.guild.voiceAdapterCreator
+            adapterCreator: msg.guild.voiceAdapterCreator,
+           selfDeaf:false
+
         });
 
-    msg.channel.send(`https://www.youtube.com/watch?v=${videoId}`)
+    console.log(connection)
+    try {
+      const stream = await ytdl(args[0], { filter: 'audioonly' });
+      const resource = await createAudioResource(stream, { inputType: StreamType.Opus });
 
-  } else {
-    return
-  }
+      const player = createAudioPlayer();
+      player.play(resource);
+      connection.subscribe(player);
+
+      player.on(AudioPlayerStatus.Idle, () => {
+        connection.destroy(); // Clean up after playback ends
+      });
+    } catch (error) {
+      console.error(error);
+      return msg.channel.send('Error playing the song.');
+    }
+
+  msg.channel.send(`https://www.youtube.com/watch?v=${videoId}`)
+
+}
 })
 
 client.on("ready", () => {
